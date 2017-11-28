@@ -1,6 +1,7 @@
-import os
-from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
 import sqlite3
+
+import os
+from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, g
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 
@@ -9,11 +10,27 @@ app = Flask(__name__)
 
 # Config SQLite
 def connect_db():
-    conn  = sqlite3.connect(os.path.join(app.root_path, 'db.sqlite'))
+    conn = sqlite3.connect(os.path.join(app.root_path, 'db.sqlite'))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def get_db():
+    if not hasattr(g, 'db'):
+        g.db = connect_db()
+    return g.db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'db'):
+        g.db.close()
 
 
 @app.route('/')
 def index():
+    # db = get_db()
+    # cursor = db.execute()
     return render_template('index.html')
 
 
@@ -36,14 +53,19 @@ class RegistrationForm(Form):
 def register():
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
-        # user = User(form.username.data, form.email.data,
-        #             form.password.data)
-        # db_session.add(user)
-        # flash('Thanks for registering')
-        # return redirect(url_for('login'))
-        return render_template('register.html')
+        email = form.email.data
+        username = form.username.data
+        password = sha256_crypt.encrypt(str(form.password.data))
+
+        with get_db() as db:
+            db.execute('INSERT INTO users(email, username, password) VALUES (?, ?, ?)', (email, username, password))
+
+        # flash('You are now registered and can login!', 'success')
+
+        return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 
 if __name__ == '__main__':
+    app.secret_key = 'SECRET_KEY123321'
     app.run(debug=True)
