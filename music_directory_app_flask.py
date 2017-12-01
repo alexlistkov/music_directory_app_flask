@@ -58,12 +58,36 @@ def register():
         password = sha256_crypt.encrypt(str(form.password.data))
 
         with get_db() as db:
-            db.execute('INSERT INTO users(email, username, password) VALUES (?, ?, ?)', (email, username, password))
+            if email in [i['email'] for i in db.execute('SELECT * FROM users')]:
+                flash('This email has already registered!', 'error')
+                redirect(url_for('register'))
+            else:
+                db.execute('INSERT INTO users(email, username, password) VALUES (?, ?, ?)', (email, username, password))
+                flash('You are now registered and can login!', 'success')
+                return redirect(url_for('login'))
 
-        # flash('You are now registered and can login!', 'success')
-
-        return redirect(url_for('index'))
     return render_template('register.html', form=form)
+
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password_candidate = request.form['password']
+
+        with get_db() as db:
+            result = db.execute('SELECT * FROM users WHERE email = ?', (email,))
+            if len(result.fetchone()) > 0:
+                data = result.fetchone()
+                password = data['password']
+
+                if sha256_crypt.verify(password_candidate, password):
+                    app.logger.info('PASSWORD MATCHED')
+            else:
+                app.logger.info('NO USER')
+
+    return render_template('login.html')
+
 
 
 if __name__ == '__main__':
