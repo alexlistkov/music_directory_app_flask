@@ -1,6 +1,8 @@
 import sqlite3
 
 import os
+from functools import wraps
+
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, g
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -27,7 +29,18 @@ def close_db(error):
         g.db.close()
 
 
+def is_logged_in(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('Please login!', 'danger')
+            return redirect(url_for('login'))
+    return wrap
+
 @app.route('/')
+@is_logged_in
 def index():
     # db = get_db()
     # cursor = db.execute()
@@ -35,6 +48,7 @@ def index():
 
 
 @app.route('/<int:id>/')
+@is_logged_in
 def details(id):
     return render_template('details.html', id=id())
 
@@ -77,17 +91,32 @@ def login():
 
         with get_db() as db:
             result = db.execute('SELECT * FROM users WHERE email = ?', (email,))
-            if len(result.fetchone()) > 0:
-                data = result.fetchone()
+            data = result.fetchone()
+            if data:
                 password = data['password']
+                username = data['username']
 
                 if sha256_crypt.verify(password_candidate, password):
-                    app.logger.info('PASSWORD MATCHED')
+                    session['logged_in'] = True
+                    session['email'] = email
+                    session['username'] = username
+                    flash('You are successfully logged in!', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    error = 'Invalid password or login!'
+                    return render_template('login.html', error=error)
             else:
-                app.logger.info('NO USER')
+                error = 'Email not found!'
+                return render_template('login.html', error = error)
 
     return render_template('login.html')
 
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You are now logged out!', 'success')
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
