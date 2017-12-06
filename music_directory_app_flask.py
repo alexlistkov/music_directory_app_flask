@@ -82,44 +82,46 @@ def details(id):
     music = cursor.fetchone()
 
     music_form = forms.MusicForm(request.form)
-    music_form.title.data = music['title']
-    music_form.album.data = music['album']
-    music_form.genre.data = music['genre']
-    music_form.artist.data = music['artist']
-    music_form.year.data = music['year']
-    music_form.cover.data = music['cover']
     music_form.lyrics.data = music['lyrics']
-    music_form.video.data = music['video']
 
     if session['id'] == music['user_id']:
         if request.method == 'POST':
             if music_form.validate():
-                title = request.form['title']
-                artist = request.form['artist']
-                genre = request.form['genre']
-                album = request.form['album']
-                year = request.form['year']
-                cover = request.form['cover']
+                title = music_form.title.data
+                artist = music_form.artist.data
+                genre = music_form.genre.data
+                album = music_form.album.data
+                year = music_form.year.data
+                cover = music_form.cover.data
                 lyrics = request.form['lyrics']
-                video = request.form['video']
+                video = music_form.video.data
                 with get_db() as db:
                     db.execute('UPDATE music SET title = ?, artist = ?, genre = ?, album = ?, year = ?, cover = ?,'
                                'lyrics = ?, video = ?'
                                'WHERE id = ?', (title, artist, genre, album, year, cover, lyrics, video, id))
+                flash('Music was edited', 'success')
             else:
-                flash("Enter form correctly", 'error')
-
+                flash('Enter form correctly', 'danger')
             return redirect(url_for('details', id=id))
-
     else:
         abort(404)
-
     return render_template('details.html', music=music, music_form=music_form)
 
 
-# @app.route('/delete/int:id/', me)
-# def delete_music(id):
-#     pass
+@app.route('/delete/<int:id>/', methods=['POST'])
+@is_logged_in
+def delete_music(id):
+    db = get_db()
+    cursor = db.execute('SELECT * FROM music WHERE id = ?', (id,))
+    music = cursor.fetchone()
+    if session['id'] == music['user_id']:
+        with get_db() as db:
+            db.execute('DELETE FROM music WHERE id = ?', (id,))
+            flash('Music was deleted', 'success')
+            return redirect(url_for('index'))
+    else:
+        abort(404)
+
 
 
 @app.route('/about')

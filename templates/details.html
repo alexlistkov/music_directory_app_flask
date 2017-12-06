@@ -23,7 +23,7 @@
         </div>
         <div class="col-md-4">
             {% if music.video %}
-                {{ music.video }}
+                <iframe width="480" height="360" src="{{ music.video | replace("watch?v=", "embed/") }}" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
             {% else %}
                 <p align="middle">Your video is here!</p>
             {% endif %}
@@ -35,33 +35,38 @@
             <div class="col-md-6">
                 <h4>Edit song:</h4>
                 <div class="form-group">
-                    {{ render_field(music_form.title, class = "form-control") }}
+                    {{ render_field(music_form.title, class = "form-control", value = music.title) }}
                 </div>
                 <div class="form-group">
-                    {{ render_field(music_form.artist, class = "form-control") }}
+                    {{ render_field(music_form.artist, class = "form-control", value = music.artist) }}
                 </div>
                 <div class="form-group">
-                    {{ render_field(music_form.genre, class = "form-control") }}
+                    {{ render_field(music_form.genre, class = "form-control", value = music.genre) }}
                 </div>
                 <div class="form-group">
-                    {{ render_field(music_form.album, class = "form-control") }}
+                    {{ render_field(music_form.album, class = "form-control", value = music.album) }}
                 </div>
                 <div class="form-group">
-                    {{ render_field(music_form.year, class = "form-control", type = 'number') }}
+                    {{ render_field(music_form.year, class = "form-control", type = 'number', value = music.year) }}
                 </div>
                 <div class="form-group">
-                    {{ render_field(music_form.cover, class = "form-control", type = 'url') }}
+                    {{ render_field(music_form.cover, class = "form-control", type = 'url', value = music.cover) }}
                 </div>
             </div>
             <div class="col-md-6">
                 <h4>Add lyrics & video:</h4>
                 <div class="form-group">
-                    {{ render_field(music_form.video, class = "form-control") }}
+                    {{ render_field(music_form.video, class = "form-control", value = music.video) }}
                 </div>
                 <div class="form-group">
-                    {{ render_field(music_form.lyrics, class = "form-control", placeholder = "Your lyrics here:") }}
+                    {{ render_field(music_form.lyrics, class = "form-control", value = music.lyrics) }}
                 </div>
                 <p><input type=submit class="btn btn-primary" value=Edit></p>
+            </div>
+        </form>
+        <form action="{{url_for('delete_music', id=music.id)}}" method="post">
+            <div class="col-md-6">
+            <input class="btn btn-danger" onclick="return confirm('Are you sure?')" type="submit" value="Delete" />
             </div>
         </form>
     </div>

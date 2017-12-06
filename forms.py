@@ -17,9 +17,9 @@ class MusicForm(Form):
     genre = StringField('Genre', [validators.Length(min=1,max=100)])
     album = StringField('Album', [validators.Length(min=1,max=100)])
     year = IntegerField('Year', default=0)
-    cover = StringField('Cover', [validators.Length(max=100)])
+    cover = StringField('Cover', [validators.Length(max=500)])
     lyrics = TextAreaField('Lyrics', [validators.Length(max=10000)])
-    video = StringField('Video', [validators.Length(max=100)])
+    video = StringField('Video', [validators.Length(max=500)])
 
 
 # class MusicAdditionalForm(Form):
