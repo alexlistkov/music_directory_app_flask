@@ -2,7 +2,7 @@
 
 {% block body %}
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-4">
             <img src="{{ music.cover }}" alt="cover" />
             <p>Title: {{ music.title }}</p>
             <p>Album: {{ music.album }}</p>
@@ -10,14 +10,14 @@
             <p>Artist: {{ music.artist }}</p>
             <p>Year: {{ music.year }}</p>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-4">
             {% if music.lyrics %}
                 <p>{{ music.lyrics }}</p>
             {% else %}
                 <p align="middle">Your lyrics here!</p>
             {% endif %}
         </div>
-        <div class="col-md-5">
+        <div class="col-md-4">
             {% if music.video %}
                 {{ music.video }}
             {% else %}
@@ -29,9 +29,9 @@
         <div class="col-md-5">
             <h4>Add lyrics & video:</h4>
             {% from "_formhelpers.html" import render_field %}
-            <form method="post" action="{{ url_for('details', id=music.id) }}">
+            <form method="post" action="">
                 <div class="form-group">
-                    {{ render_field(music_additional_form.lyrics, class = "form-control", placeholder = "Your lyrics here:") }}
+                    {{ render_field(music_additional_form.lyrics, class = "form-control", placeholder = "Y") }}
                 </div>
                 <div class="form-group">
                     {{ render_field(music_additional_form.video, class = "form-control") }}
@@ -42,7 +42,7 @@
         <div class="col-md-5">
             <h4>Edit song:</h4>
             {% from "_formhelpers.html" import render_field %}
-            <form method="post" action="{{ url_for('details', id=music.id) }}">
+            <form method="post" action="{{ url_for('post_music') }}">
                 <div class="form-group">
                     {{ render_field(music_form.title, class = "form-control") }}
                 </div>
@@ -61,17 +61,11 @@
                 <div class="form-group">
                     {{ render_field(music_form.cover, class = "form-control", type = 'url') }}
                 </div>
-                <p><input type=submit class="btn btn-primary" value=Edit></p>
+                <p><input type=submit class="btn btn-primary" value=Submit></p>
             </form>
         </div>
         <div class="col-md-2">
-{#            {% if session.logged_in %}#}
-{#                <h4>Delete:</h4>#}
-{#                <p id="delete_warning">Don't press if you don't sure!</p>#}
-{#                <form action="{{ url_for('delete_music', id=music.id) }}"  method="post">#}
-{#                    <input class="btn btn-danger" onclick="return confirm('Are you sure?')" type="submit" value="Delete" />#}
-{#                </form>#}
-{#            {% endif %}#}
+            DELETE
         </div>
     </div>
 {% endblock %}

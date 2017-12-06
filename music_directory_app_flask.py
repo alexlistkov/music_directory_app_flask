@@ -74,7 +74,7 @@ def post_music():
     return redirect(url_for('index'))
 
 
-@app.route('/<int:id>', methods=['GET', 'POST'])
+@app.route('/<int:id>/', methods=['GET', 'POST'])
 @is_logged_in
 def details(id):
     db = get_db()
@@ -108,7 +108,7 @@ def details(id):
 
             elif music_additional_form.validate():
                 lyrics = request.form['lyrics']
-                video = request.form['video'] #.replace("watch?v=", "embed/")
+                video = request.form['video'].replace("watch?v=", "embed/")
                 with get_db() as db:
                     db.execute('UPDATE music SET lyrics = ?, video = ? WHERE id =?', (lyrics, video, id))
 
@@ -121,18 +121,9 @@ def details(id):
                            music_form=music_form)
 
 
-# @app.route('/delete/<int:id>', methods=["POST"])
-# @is_logged_in
+# @app.route('/delete/int:id/', me)
 # def delete_music(id):
-#     with get_db() as db:
-#         result = db.execute('SELECT * FROM users WHERE id = ?', (id,))
-#         music = result.fetchone()
-#         if session['id'] == music['user_id']:
-#             db.execute('DELETE FROM music WHERE id = ?', (id,))
-#         else:
-#             abort(404)
-#
-#     return redirect(url_for('index'))
+#     pass
 
 
 @app.route('/about')
