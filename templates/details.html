@@ -1,10 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-DETAILS
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-2">
+            <img src="{{ music.cover }}" alt="cover" />
+            <p>Title: {{ music.title }}</p>
+            <p>Album: {{ music.album }}</p>
+            <p>Genre: {{ music.genre }}</p>
+            <p>Artist: {{ music.artist }}</p>
+            <p>Year: {{ music.year }}</p>
+        </div>
+        <div class="col-md-5">
+            {% if music.lyrics %}
+                <p>{{ music.lyrics }}</p>
+            {% else %}
+                <p align="middle">Your lyrics here!</p>
+            {% endif %}
+        </div>
+        <div class="col-md-5">
+            {% if music.video %}
+                {{ music.video }}
+            {% else %}
+                <p align="middle">Your video is here!</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="well row">
+        <div class="col-md-5">
+            <h4>Add lyrics & video:</h4>
+            {% from "_formhelpers.html" import render_field %}
+            <form method="post" action="{{ url_for('details', id=music.id) }}">
+                <div class="form-group">
+                    {{ render_field(music_additional_form.lyrics, class = "form-control", placeholder = "Your lyrics here:") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(music_additional_form.video, class = "form-control") }}
+                </div>
+                <p><input type=submit class="btn btn-primary" value=Submit></p>
+            </form>
+        </div>
+        <div class="col-md-5">
+            <h4>Edit song:</h4>
+            {% from "_formhelpers.html" import render_field %}
+            <form method="post" action="{{ url_for('details', id=music.id) }}">
+                <div class="form-group">
+                    {{ render_field(music_form.title, class = "form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(music_form.artist, class = "form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(music_form.genre, class = "form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(music_form.album, class = "form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(music_form.year, class = "form-control", type = 'number') }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(music_form.cover, class = "form-control", type = 'url') }}
+                </div>
+                <p><input type=submit class="btn btn-primary" value=Edit></p>
+            </form>
+        </div>
+        <div class="col-md-2">
+{#            {% if session.logged_in %}#}
+{#                <h4>Delete:</h4>#}
+{#                <p id="delete_warning">Don't press if you don't sure!</p>#}
+{#                <form action="{{ url_for('delete_music', id=music.id) }}"  method="post">#}
+{#                    <input class="btn btn-danger" onclick="return confirm('Are you sure?')" type="submit" value="Delete" />#}
+{#                </form>#}
+{#            {% endif %}#}
+        </div>
+    </div>
+{% endblock %}

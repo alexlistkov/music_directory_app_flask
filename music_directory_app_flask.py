@@ -3,7 +3,7 @@ import sqlite3
 import os
 from functools import wraps
 
-from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, g
+from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, g, abort
 import forms
 from passlib.hash import sha256_crypt
 
@@ -43,21 +43,101 @@ def is_logged_in(f):
 @app.route('/')
 @is_logged_in
 def index():
-    with get_db() as db:
-        cursor = db.execute('SELECT * FROM music WHERE user_id = ?', (session['id'],))
-        musics = cursor.fetchall()
-    return render_template('index.html', musics=musics)
+    db = get_db()
+    cursor = db.execute('SELECT * FROM music WHERE user_id = ?', (session['id'],))
+    musics = cursor.fetchall()
+    music_form = forms.MusicForm(request.form)
+    return render_template('index.html', musics=musics, music_form=music_form)
 
 
-# @app.route('/post_music', methods=['POST'])
-# def post_music():
+@app.route('/post_music', methods=['POST'])
+@is_logged_in
+def post_music():
+    music_form = forms.MusicForm(request.form)
+    if music_form.validate():
+        title = music_form.title.data
+        artist = music_form.artist.data
+        genre = music_form.genre.data
+        album = music_form.album.data
+        year = music_form.year.data
+        cover = music_form.cover.data
+        user = session['id']
+
+        with get_db() as db:
+            db.execute('INSERT INTO music(title, artist, genre, album, year, cover, user_id)'
+                       'VALUES (?, ?, ?, ?, ?, ?, ?)', (title, artist, genre, album, year, cover, user))
+
+        flash('Music created!', 'success')
+
+    else:
+        flash('Enter form correctly!', 'error')
+    return redirect(url_for('index'))
 
 
-
-@app.route('/<int:id>/')
+@app.route('/<int:id>', methods=['GET', 'POST'])
 @is_logged_in
 def details(id):
-    return render_template('details.html', id=id())
+    db = get_db()
+    cursor = db.execute('SELECT * FROM music WHERE id = ?', (id,))
+    music = cursor.fetchone()
+
+    music_form = forms.MusicForm(request.form)
+    music_form.title.data = music['title']
+    music_form.album.data = music['album']
+    music_form.genre.data = music['genre']
+    music_form.artist.data = music['artist']
+    music_form.year.data = music['year']
+    music_form.cover.data = music['cover']
+
+    music_additional_form = forms.MusicAdditionalForm(request.form)
+    music_additional_form.lyrics.data = music['lyrics']
+    music_additional_form.video.data = music['video']
+
+    if session['id'] == music['user_id']:
+        if request.method == 'POST':
+            if music_form.validate():
+                title = request.form['title']
+                artist = request.form['artist']
+                genre = request.form['genre']
+                album = request.form['album']
+                year = request.form['year']
+                cover = request.form['cover']
+                with get_db() as db:
+                    db.execute('UPDATE music SET title = ?, artist = ?, genre = ?, album = ?, year = ?, cover = ?'
+                               'WHERE id = ?', (title, artist, genre, album, year, cover, id))
+
+            elif music_additional_form.validate():
+                lyrics = request.form['lyrics']
+                video = request.form['video'] #.replace("watch?v=", "embed/")
+                with get_db() as db:
+                    db.execute('UPDATE music SET lyrics = ?, video = ? WHERE id =?', (lyrics, video, id))
+
+            return redirect(url_for('details', id=id))
+
+    else:
+        abort(404)
+
+    return render_template('details.html', music=music, music_additional_form=music_additional_form,
+                           music_form=music_form)
+
+
+# @app.route('/delete/<int:id>', methods=["POST"])
+# @is_logged_in
+# def delete_music(id):
+#     with get_db() as db:
+#         result = db.execute('SELECT * FROM users WHERE id = ?', (id,))
+#         music = result.fetchone()
+#         if session['id'] == music['user_id']:
+#             db.execute('DELETE FROM music WHERE id = ?', (id,))
+#         else:
+#             abort(404)
+#
+#     return redirect(url_for('index'))
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -120,5 +200,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.secret_key = 'SECRET_KEY123321'
+    app.secret_key = '\x1c\x10d\xad\xb5\xc2\xa1\xce\xdb1.\xefF\x1f\xdbMv\xea1\xe8 m\x10{'
     app.run(debug=True)

@@ -12,12 +12,14 @@ class RegistrationForm(Form):
 
 
 class MusicForm(Form):
-    title = StringField('Title', [validators.Length(max=100)])
-    artist = StringField('Artist', [validators.Length(max=100)])
-    genre = StringField('Genre', [validators.Length(max=100)])
-    album = StringField('Album', [validators.Length(max=100)])
+    title = StringField('Title', [validators.Length(min=1, max=100)])
+    artist = StringField('Artist', [validators.Length(min=1,max=100)])
+    genre = StringField('Genre', [validators.Length(min=1,max=100)])
+    album = StringField('Album', [validators.Length(min=1,max=100)])
     year = IntegerField('Year', default=0)
     cover = StringField('Cover', [validators.Length(max=100)])
 
 
-
+class MusicAdditionalForm(Form):
+    lyrics = TextAreaField('Lyrics', [validators.Length(max=1000)])
+    video = StringField('Video', [validators.Length(max=100)])
