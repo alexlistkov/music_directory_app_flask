@@ -180,6 +180,12 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/sort_by_title')
+@app.route('/sort_by_year')
+def sort_by():
+    return render_template('index.html')
+
+
 @app.route('/logout')
 @is_logged_in
 def logout():
