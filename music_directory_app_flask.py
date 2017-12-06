@@ -88,10 +88,8 @@ def details(id):
     music_form.artist.data = music['artist']
     music_form.year.data = music['year']
     music_form.cover.data = music['cover']
-
-    music_additional_form = forms.MusicAdditionalForm(request.form)
-    music_additional_form.lyrics.data = music['lyrics']
-    music_additional_form.video.data = music['video']
+    music_form.lyrics.data = music['lyrics']
+    music_form.video.data = music['video']
 
     if session['id'] == music['user_id']:
         if request.method == 'POST':
@@ -102,23 +100,21 @@ def details(id):
                 album = request.form['album']
                 year = request.form['year']
                 cover = request.form['cover']
-                with get_db() as db:
-                    db.execute('UPDATE music SET title = ?, artist = ?, genre = ?, album = ?, year = ?, cover = ?'
-                               'WHERE id = ?', (title, artist, genre, album, year, cover, id))
-
-            elif music_additional_form.validate():
                 lyrics = request.form['lyrics']
-                video = request.form['video'].replace("watch?v=", "embed/")
+                video = request.form['video']
                 with get_db() as db:
-                    db.execute('UPDATE music SET lyrics = ?, video = ? WHERE id =?', (lyrics, video, id))
+                    db.execute('UPDATE music SET title = ?, artist = ?, genre = ?, album = ?, year = ?, cover = ?,'
+                               'lyrics = ?, video = ?'
+                               'WHERE id = ?', (title, artist, genre, album, year, cover, lyrics, video, id))
+            else:
+                flash("Enter form correctly", 'error')
 
             return redirect(url_for('details', id=id))
 
     else:
         abort(404)
 
-    return render_template('details.html', music=music, music_additional_form=music_additional_form,
-                           music_form=music_form)
+    return render_template('details.html', music=music, music_form=music_form)
 
 
 # @app.route('/delete/int:id/', me)

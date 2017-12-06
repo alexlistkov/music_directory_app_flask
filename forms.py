@@ -18,8 +18,10 @@ class MusicForm(Form):
     album = StringField('Album', [validators.Length(min=1,max=100)])
     year = IntegerField('Year', default=0)
     cover = StringField('Cover', [validators.Length(max=100)])
-
-
-class MusicAdditionalForm(Form):
-    lyrics = TextAreaField('Lyrics', [validators.Length(max=1000)])
+    lyrics = TextAreaField('Lyrics', [validators.Length(max=10000)])
     video = StringField('Video', [validators.Length(max=100)])
+
+
+# class MusicAdditionalForm(Form):
+#     lyrics = TextAreaField('Lyrics', [validators.Length(max=1000)])
+#     video = StringField('Video', [validators.Length(max=100)])
