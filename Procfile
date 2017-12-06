@@ -1,0 +1,1 @@
+web: gunicorn music_directory_app_flask:app
